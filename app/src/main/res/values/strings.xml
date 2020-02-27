@@ -4,4 +4,5 @@
     <string name="current_special_browser">隐私浏览器</string>
     <string name="redirecting">正在跳转中...</string>
     <string name="url_place_holder">url占位符</string>
+    <string name="rule3">域名规则</string>
 </resources>
