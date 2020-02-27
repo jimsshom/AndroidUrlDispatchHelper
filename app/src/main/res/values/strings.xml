@@ -2,4 +2,6 @@
     <string name="app_name">AndroidUrlDispatchHelper</string>
     <string name="current_default_browser">默认浏览器</string>
     <string name="current_special_browser">隐私浏览器</string>
+    <string name="redirecting">正在跳转中...</string>
+    <string name="url_place_holder">url占位符</string>
 </resources>
