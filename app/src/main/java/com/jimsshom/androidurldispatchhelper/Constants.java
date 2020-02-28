@@ -1,6 +1,8 @@
 package com.jimsshom.androidurldispatchhelper;
 
 public class Constants {
+    public static String PACKAGE_NAME = "com.jimsshom.androidurldispatchhelper";
+
     public static String EXTRA_KEY_SELECTED_PACKAGE_NAME = "com.jimsshom.androidurldispatchhelper.selectedpackagename";
 
     public static String SHARED_PREFERENCE_NAME = "com.jimsshom.androidurldispatchhelper.preference";

@@ -37,7 +37,8 @@ public class MyDataAdapter extends RecyclerView.Adapter<MyDataAdapter.MyViewHold
         holder.itemView.setActivated(true);
         //API 21以上才可以用colorStateList
         if (selectionTracker.isSelected(getKeyByPosition(position))) {
-            holder.itemView.setBackgroundColor(Color.GREEN);
+            //holder.itemView.setBackgroundColor(Color.GREEN);
+            holder.itemView.setBackgroundColor(0xFFFEAA0C);
         } else {
             holder.itemView.setBackgroundColor(Color.WHITE);
         }

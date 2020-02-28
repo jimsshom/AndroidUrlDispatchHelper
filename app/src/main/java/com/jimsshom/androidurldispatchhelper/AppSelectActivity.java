@@ -44,7 +44,7 @@ public class AppSelectActivity extends AppCompatActivity {
             ApplicationInfo applicationInfo = resolveInfo.activityInfo.applicationInfo;
             String label = packageManager.getApplicationLabel(applicationInfo).toString();
             String packageName = applicationInfo.packageName;
-            if ("com.jimsshom.androidurldispatchhelper".equals(packageName)) {
+            if (Constants.PACKAGE_NAME.equals(packageName)) {
                 continue;
             }
             Drawable icon = resolveInfo.loadIcon(packageManager);
