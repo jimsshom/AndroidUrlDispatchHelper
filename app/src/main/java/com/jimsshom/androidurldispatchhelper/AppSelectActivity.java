@@ -39,7 +39,7 @@ public class AppSelectActivity extends AppCompatActivity {
         PackageManager packageManager = getPackageManager();
         List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL);
 
-        ArrayList<RowData> dataList = new ArrayList<>();
+        ArrayList<RowData> dataList = new ArrayList<RowData>();
         for (ResolveInfo resolveInfo : list) {
             ApplicationInfo applicationInfo = resolveInfo.activityInfo.applicationInfo;
             String label = packageManager.getApplicationLabel(applicationInfo).toString();
@@ -59,7 +59,7 @@ public class AppSelectActivity extends AppCompatActivity {
         myDataAdapter = new MyDataAdapter(dataset);
         recyclerView.setAdapter(myDataAdapter);
 
-        SelectionTracker tracker = new SelectionTracker.Builder<>(
+        SelectionTracker tracker = new SelectionTracker.Builder(
                 "my-uri-selection",
                 recyclerView,
                 new MyStableIdProvider(myDataAdapter),

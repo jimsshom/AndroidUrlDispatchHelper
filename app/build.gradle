@@ -24,6 +24,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility = 1.6
+        targetCompatibility = 1.6
+    }
 
     applicationVariants.all { variant ->
         variant.outputs.all {
@@ -42,4 +46,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview-selection:1.0.0'
+    implementation 'com.maxmind.geoip2:geoip2:2.7.0'
 }

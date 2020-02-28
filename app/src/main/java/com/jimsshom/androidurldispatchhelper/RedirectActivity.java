@@ -7,22 +7,30 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import com.maxmind.geoip2.DatabaseReader;
+import com.maxmind.geoip2.model.CountryResponse;
+import com.maxmind.geoip2.record.Country;
+
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 
 public class RedirectActivity extends AppCompatActivity {
     private String currentDefaultBrowser = "";
     private String currentSpecialBrowser = "";
 
-    private HashSet<String> rule1Set = new HashSet<>();
-    private HashSet<String> rule2Set = new HashSet<>();
-    private HashSet<String> rule3Set = new HashSet<>();
+    private HashSet<String> rule1Set = new HashSet<String>();
+    private HashSet<String> rule2Set = new HashSet<String>();
+    private HashSet<String> rule3Set = new HashSet<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +67,7 @@ public class RedirectActivity extends AppCompatActivity {
     }
 
     private void initRule2() {
-        HashSet<String> newRule2Set = new HashSet<>();
+        HashSet<String> newRule2Set = new HashSet<String>();
         try {
             InputStream is = getResources().openRawResource(R.raw.rule2);
             InputStreamReader inputStreamReader = new InputStreamReader(is);
@@ -83,7 +91,7 @@ public class RedirectActivity extends AppCompatActivity {
     }
 
     private void initRule1() {
-        HashSet<String> newRule1Set = new HashSet<>();
+        HashSet<String> newRule1Set = new HashSet<String>();
         try {
             InputStream is = getResources().openRawResource(R.raw.rule1);
             InputStreamReader inputStreamReader = new InputStreamReader(is);
@@ -107,7 +115,7 @@ public class RedirectActivity extends AppCompatActivity {
     }
 
     private void initRule3() {
-        HashSet<String> newRule3Set = new HashSet<>();
+        HashSet<String> newRule3Set = new HashSet<String>();
         try {
             InputStream is = getResources().openRawResource(R.raw.rule3);
             InputStreamReader inputStreamReader = new InputStreamReader(is);
@@ -150,6 +158,17 @@ public class RedirectActivity extends AppCompatActivity {
     }
 
     private boolean isSpecialUrl(Uri uri) {
+        if (isIp(uri)) {
+            if (isLocalAddress(uri.getHost())) {
+                System.out.println("localAddress: " + uri.getHost());
+                return false;
+            }
+            String country = queryGeoIp(uri.getHost());
+            if ("CN".equals(country) || "Unknown".equals(country)) {
+                return false;
+            }
+            return true;
+        }
         if (rule1(uri)) {
             return true;
         }
@@ -161,6 +180,103 @@ public class RedirectActivity extends AppCompatActivity {
         }
 
         return false;
+    }
+
+    private boolean isLocalAddress(String ip) {
+        if ("127.0.0.1".equals(ip) || "0.0.0.0".equals(ip)) {
+            return true;
+        }
+        /**
+         * 10.0.0.0/8：10.0.0.0～10.255.255.255
+         * 172.16.0.0/12：172.16.0.0～172.31.255.255
+         * 192.168.0.0/16：192.168.0.0～192.168.255.255
+         *
+         * https://blog.csdn.net/weixin_38626376/article/details/74530583
+         */
+        //TODO: 判断局域网地址
+        try {
+            byte[] addr = InetAddress.getByName(ip).getAddress();
+
+            final byte b0 = addr[0];
+            final byte b1 = addr[1];
+            //10.x.x.x/8
+            final byte SECTION_1 = 0x0A;
+            //172.16.x.x/12
+            final byte SECTION_2 = (byte) 0xAC;
+            final byte SECTION_3 = (byte) 0x10;
+            final byte SECTION_4 = (byte) 0x1F;
+            //192.168.x.x/16
+            final byte SECTION_5 = (byte) 0xC0;
+            final byte SECTION_6 = (byte) 0xA8;
+            switch (b0) {
+                case SECTION_1:
+                    return true;
+                case SECTION_2:
+                    if (b1 >= SECTION_3 && b1 <= SECTION_4) {
+                        return true;
+                    }
+                    break;
+                case SECTION_5:
+                    switch (b1) {
+                        case SECTION_6:
+                            return true;
+                    }
+                default:
+                    return false;
+            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private String queryGeoIp(String ip) {
+        long ts = System.currentTimeMillis();
+        InputStream inputStream = null;
+        DatabaseReader reader = null;
+        try {
+            AssetManager assets = getAssets();
+            inputStream = assets.open("GeoLite2-Country.mmdb");
+            reader = new DatabaseReader.Builder(inputStream).build();
+            CountryResponse response = reader.country(InetAddress.getByName(ip));
+            Country country = response.getCountry();
+            System.out.println("GeoIp: " + ip + " " + country.getIsoCode());
+            return country.getIsoCode();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            System.out.println("GeoIp rt: " + String.valueOf(System.currentTimeMillis() - ts));
+        }
+        return "Unknown";
+    }
+
+    private boolean isIp(Uri uri) {
+        String host = uri.getHost();
+        for (char c : host.toCharArray()) {
+            if (c == '.') {
+                continue;
+            }
+            if (c >= '0' && c <= '9') {
+                continue;
+            }
+            return false;
+        }
+        System.out.println("IsIp: " + host);
+        return true;
     }
 
     private boolean rule2(Uri uri) {
