@@ -13,9 +13,11 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AppSelectActivity extends AppCompatActivity {
@@ -37,10 +39,21 @@ public class AppSelectActivity extends AppCompatActivity {
         PackageManager packageManager = getPackageManager();
         List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL);
 
-        RowData[] dataset = new RowData[list.size()];
+        ArrayList<RowData> dataList = new ArrayList<>();
+        for (ResolveInfo resolveInfo : list) {
+            ApplicationInfo applicationInfo = resolveInfo.activityInfo.applicationInfo;
+            String label = packageManager.getApplicationLabel(applicationInfo).toString();
+            String packageName = applicationInfo.packageName;
+            if ("com.jimsshom.androidurldispatchhelper".equals(packageName)) {
+                continue;
+            }
+            Drawable icon = resolveInfo.loadIcon(packageManager);
+            dataList.add(new RowData(label, packageName, icon));
+        }
+
+        RowData[] dataset = new RowData[dataList.size()];
         for(int i = 0; i < dataset.length; i++) {
-            ApplicationInfo applicationInfo = list.get(i).activityInfo.applicationInfo;
-            dataset[i] = new RowData(packageManager.getApplicationLabel(applicationInfo).toString(), applicationInfo.packageName, list.get(i).loadIcon(packageManager));
+            dataset[i] = dataList.get(i);
         }
 
         myDataAdapter = new MyDataAdapter(dataset);
