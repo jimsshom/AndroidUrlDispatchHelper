@@ -193,7 +193,6 @@ public class RedirectActivity extends AppCompatActivity {
          *
          * https://blog.csdn.net/weixin_38626376/article/details/74530583
          */
-        //TODO: 判断局域网地址
         try {
             byte[] addr = InetAddress.getByName(ip).getAddress();
 
